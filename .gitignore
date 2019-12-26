@@ -1,6 +1,14 @@
+# IntelliJ IDEA
+.idea/
+
+# VSCode
+.vscode/
+
+# CMake
+build/
+bin/
+cmake-build-debug/
+lib/
+
+# Other
 monitor
-a.out
-settings.json
-*.o
-build/*
-*.json
