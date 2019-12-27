@@ -27,6 +27,7 @@ int TotalProcesses();
 int RunningProcesses();
 std::string OperatingSystem();
 std::string Kernel();
+int NumberOfCpus();
 
 // CPU
 enum CPUStates {
@@ -42,6 +43,7 @@ enum CPUStates {
   kGuestNice_
 };
 std::vector<std::string> CpuUtilization();
+std::vector<std::string> CpuUtilization(const std::string core_number);
 long Jiffies();
 long ActiveJiffies();
 long ActiveJiffies(int pid);
@@ -57,7 +59,7 @@ float CpuUtilization(int pid);
 
 // Util
 std::vector<std::string> ParseLine(std::string line);
-int ParseValueFrom(const std::string filename, const std::string keyword);
+std::vector<std::string> ParseLineFrom(const std::string filename, const std::string keyword);
 };  // namespace LinuxParser
 
 #endif

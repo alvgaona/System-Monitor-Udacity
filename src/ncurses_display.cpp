@@ -33,17 +33,40 @@ std::string NCursesDisplay::ProgressBar(float percent) {
 void NCursesDisplay::DisplaySystem(System& system, WINDOW* window) {
   int row{0};
   mvwprintw(window, ++row, 2, ("OS: " + system.OperatingSystem()).c_str());
+  
   mvwprintw(window, ++row, 2, ("Kernel: " + system.Kernel()).c_str());
+  
   mvwprintw(window, ++row, 2, "CPU: ");
   wattron(window, COLOR_PAIR(1));
   mvwprintw(window, row, 10, "");
   wprintw(window, ProgressBar(system.Cpu().Utilization()).c_str());
+  wattroff(window, COLOR_PAIR(1));
+  mvwprintw(window, ++row, 2, "CPU0: ");
+  wattron(window, COLOR_PAIR(1));
+  mvwprintw(window, row, 10, "");
+  wprintw(window, ProgressBar(system.Cpu(0).Utilization()).c_str());
+  wattroff(window, COLOR_PAIR(1));
+  mvwprintw(window, ++row, 2, "CPU1: ");
+  wattron(window, COLOR_PAIR(1));
+  mvwprintw(window, row, 10, "");
+  wprintw(window, ProgressBar(system.Cpu(1).Utilization()).c_str());
+  wattroff(window, COLOR_PAIR(1));
+  mvwprintw(window, ++row, 2, "CPU2: ");
+  wattron(window, COLOR_PAIR(1));
+  mvwprintw(window, row, 10, "");
+  wprintw(window, ProgressBar(system.Cpu(2).Utilization()).c_str());
+  wattroff(window, COLOR_PAIR(1));
+  mvwprintw(window, ++row, 2, "CPU3: ");
+  wattron(window, COLOR_PAIR(1));
+  mvwprintw(window, row, 10, "");
+  wprintw(window, ProgressBar(system.Cpu(3).Utilization()).c_str());
   wattroff(window, COLOR_PAIR(1));
   mvwprintw(window, ++row, 2, "Memory: ");
   wattron(window, COLOR_PAIR(1));
   mvwprintw(window, row, 10, "");
   wprintw(window, ProgressBar(system.MemoryUtilization()).c_str());
   wattroff(window, COLOR_PAIR(1));
+  
   mvwprintw(window, ++row, 2,
             ("Total Processes: " + to_string(system.TotalProcesses())).c_str());
   mvwprintw(
@@ -91,7 +114,7 @@ void NCursesDisplay::Display(System& system, int n) {
   start_color();  // enable color
 
   int x_max{getmaxx(stdscr)};
-  WINDOW* system_window = newwin(9, x_max - 1, 0, 0);
+  WINDOW* system_window = newwin(13, x_max - 1, 0, 0);
   WINDOW* process_window =
       newwin(3 + n, x_max - 1, system_window->_maxy + 1, 0);
 

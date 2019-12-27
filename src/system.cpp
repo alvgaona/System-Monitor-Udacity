@@ -16,8 +16,13 @@ using std::size_t;
 using std::string;
 using std::vector;
 
-// TODO: Return the system's CPU
-Processor& System::Cpu() { return cpu_; }
+System::System() {
+  int num_of_cpus = LinuxParser::NumberOfCpus();
+  for (int i = 0; i < num_of_cpus; i++) {
+    Processor processor(i);
+    cpus_.emplace_back(processor);
+  }
+}
 
 vector<Process>& System::Processes() { 
   vector<int> pids(LinuxParser::Pids());
@@ -27,6 +32,10 @@ vector<Process>& System::Processes() {
   }
   return processes_;
 }
+
+Processor& System::Cpu() { return cpu_; }
+
+Processor& System::Cpu(int number) { return cpus_[number]; }
 
 std::string System::Kernel() { return LinuxParser::Kernel(); }
 

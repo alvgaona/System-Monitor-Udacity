@@ -7,6 +7,7 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#include <thread>
 
 using std::stof;
 using std::string;
@@ -113,15 +114,24 @@ long LinuxParser::ActiveJiffies() { return 0; }
 // TODO: Read and return the number of idle jiffies for the system
 long LinuxParser::IdleJiffies() { return 0; }
 
-// TODO: Read and return CPU utilization
-vector<string> LinuxParser::CpuUtilization() { return {}; }
+int LinuxParser::NumberOfCpus() {
+  return std::thread::hardware_concurrency();
+}
+
+vector<string> LinuxParser::CpuUtilization() {
+  return ParseLineFrom(kStatFilename, "cpu");
+}
+
+vector<string> LinuxParser::CpuUtilization(const string core_number) {
+  return ParseLineFrom(kStatFilename, "cpu" + core_number);
+}
 
 int LinuxParser::TotalProcesses() { 
-  return LinuxParser::ParseValueFrom(kStatFilename, "processes");
+  return std::stoi(LinuxParser::ParseLineFrom(kStatFilename, "processes")[1]);
 }
 
 int LinuxParser::RunningProcesses() { 
-  return LinuxParser::ParseValueFrom(kStatFilename, "procs_running");
+  return std::stoi(LinuxParser::ParseLineFrom(kStatFilename, "procs_running")[1]);
 }
 
 // TODO: Read and return the command associated with a process
@@ -149,17 +159,17 @@ long LinuxParser::UpTime(int pid [[maybe_unused]]) { return 0; }
 float LinuxParser::CpuUtilization(int pid [[maybe_unused]]) { return 0.0f; }
 
 
-int LinuxParser::ParseValueFrom(const string filename, const string keyword) {
+vector<string> LinuxParser::ParseLineFrom(const string filename, const string keyword) {
 	string line;
   	std::ifstream stream(kProcDirectory + filename);
     while(getline(stream, line)) {
         if(line.compare(0, keyword.size(), keyword) == 0) {
-	        return std::stoi(LinuxParser::ParseLine(line)[1]);
+	        return LinuxParser::ParseLine(line);
         }
     }
   	
-    // If member fails to fetch the total number of processes
-  	return -1;
+  	vector<string> empty{};
+  	return empty;
 }
 
 vector<string> LinuxParser::ParseLine(string line) {
