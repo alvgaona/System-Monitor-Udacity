@@ -102,22 +102,13 @@ long LinuxParser::IdleJiffies() { return 0; }
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 
 int LinuxParser::TotalProcesses() { 
-    string line;
-  	std::ifstream stream(kProcDirectory + kStatFilename);
-    const string keyword = "processes";
-    while(getline(stream, line)) {
-        if(line.compare(0, keyword.size(), keyword) == 0) {
-            // Get the number of processes and return it by int.
-	        return std::stoi(LinuxParser::ParseLine(line)[1]);
-        }
-    }
-  	
-    // If member fails to fetch the total number of processes
-  	return -1;
+    return LinuxParser::ReadProcessesFromStat("processes");
 }
 
 // TODO: Read and return the number of running processes
-int LinuxParser::RunningProcesses() { return 0; }
+int LinuxParser::RunningProcesses() { 
+	return LinuxParser::ReadProcessesFromStat("procs_running");
+}
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
@@ -139,6 +130,20 @@ string LinuxParser::User(int pid [[maybe_unused]]) { return string(); }
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid [[maybe_unused]]) { return 0; }
 
+
+int LinuxParser::ReadProcessesFromStat(const string keyword) {
+	string line;
+  	std::ifstream stream(kProcDirectory + kStatFilename);
+    while(getline(stream, line)) {
+        if(line.compare(0, keyword.size(), keyword) == 0) {
+            // Get the number of processes and return it by int.
+	        return std::stoi(LinuxParser::ParseLine(line)[1]);
+        }
+    }
+  	
+    // If member fails to fetch the total number of processes
+  	return -1;
+}
 
 vector<string> LinuxParser::ParseLine(string line) {
     std::istringstream iss(line);

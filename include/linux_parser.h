@@ -56,6 +56,7 @@ long int UpTime(int pid);
 
 // Util
 std::vector<std::string> ParseLine(std::string line);
+int ReadProcessesFromStat(const std::string keyword);
 };  // namespace LinuxParser
 
 #endif
