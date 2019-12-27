@@ -35,7 +35,7 @@ std::string System::OperatingSystem() { return string(); }
 int System::RunningProcesses() { return 0; }
 
 int System::TotalProcesses() { 
-	return LinuxParser::Pids().size();
+	return LinuxParser::TotalProcesses();
 }
 
 // TODO: Return the number of seconds since the system started running

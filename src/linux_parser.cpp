@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
 
 using std::stof;
 using std::string;
@@ -68,7 +69,18 @@ vector<int> LinuxParser::Pids() {
 }
 
 // TODO: Read and return the system memory utilization
-float LinuxParser::MemoryUtilization() { return 0.0; }
+float LinuxParser::MemoryUtilization() { 
+  float mem_total = 0;
+  float mem_free = 0;
+  float buffers = 0;
+  string line;
+  std::ifstream stream(kProcDirectory + kMeminfoFilename);
+  if (stream.is_open()) {
+    while(std::getline(stream, line)) {
+      std::istringstream linestream(line);
+    }
+  }
+  return 0.0; }
 
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() { return 0; }
@@ -89,8 +101,20 @@ long LinuxParser::IdleJiffies() { return 0; }
 // TODO: Read and return CPU utilization
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 
-// TODO: Read and return the total number of processes
-int LinuxParser::TotalProcesses() { return 0; }
+int LinuxParser::TotalProcesses() { 
+    string line;
+  	std::ifstream stream(kProcDirectory + kStatFilename);
+    const string keyword = "processes";
+    while(getline(stream, line)) {
+        if(line.compare(0, keyword.size(), keyword) == 0) {
+            // Get the number of processes and return it by int.
+	        return std::stoi(LinuxParser::ParseLine(line)[1]);
+        }
+    }
+  	
+    // If member fails to fetch the total number of processes
+  	return -1;
+}
 
 // TODO: Read and return the number of running processes
 int LinuxParser::RunningProcesses() { return 0; }
@@ -114,3 +138,13 @@ string LinuxParser::User(int pid [[maybe_unused]]) { return string(); }
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
 long LinuxParser::UpTime(int pid [[maybe_unused]]) { return 0; }
+
+
+vector<string> LinuxParser::ParseLine(string line) {
+    std::istringstream iss(line);
+    std::istream_iterator<string> segment(iss);
+    std::istream_iterator<string> eos;
+    vector<string> vec_data(segment, eos);
+
+    return vec_data;
+}
