@@ -52,11 +52,12 @@ std::string Command(int pid);
 std::string Ram(int pid);
 std::string Uid(int pid);
 std::string User(int pid);
-long int UpTime(int pid); 
+long int UpTime(int pid);
+float CpuUtilization(int pid);
 
 // Util
 std::vector<std::string> ParseLine(std::string line);
-int ReadProcessesFromStat(const std::string keyword);
+int ParseValueFrom(const std::string filename, const std::string keyword);
 };  // namespace LinuxParser
 
 #endif

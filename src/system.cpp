@@ -19,13 +19,18 @@ using std::vector;
 // TODO: Return the system's CPU
 Processor& System::Cpu() { return cpu_; }
 
-// TODO: Return a container composed of the system's processes
-vector<Process>& System::Processes() { return processes_; }
+vector<Process>& System::Processes() { 
+  vector<int> pids(LinuxParser::Pids());
+  for (auto &pid : pids) {
+  	Process process(pid);
+    processes_.push_back(process);
+  }
+  return processes_;
+}
 
 std::string System::Kernel() { return LinuxParser::Kernel(); }
 
-// TODO: Return the system's memory utilization
-float System::MemoryUtilization() { return 0.0; }
+float System::MemoryUtilization() { return LinuxParser::MemoryUtilization(); }
 
 std::string System::OperatingSystem() { return LinuxParser::OperatingSystem(); }
 
