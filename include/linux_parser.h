@@ -61,7 +61,8 @@ std::string StatFor(int pid);
 
 // Util
 std::vector<std::string> ParseLine(std::string line);
-std::vector<std::string> ParseLineFrom(const std::string filename, const std::string keyword);
+std::vector<std::string> ParseLineFrom(const std::string filename,
+                                       const std::string keyword);
 };  // namespace LinuxParser
 
 #endif

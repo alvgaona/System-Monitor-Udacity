@@ -1,8 +1,8 @@
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
 
-#include <vector>
 #include <string>
+#include <vector>
 
 class Processor {
  public:
@@ -22,7 +22,7 @@ class Processor {
   float prev_steal_{0};
   float prev_guest_{0};
   float prev_guest_nice_{0};
-  
+
   float ComputeUtilization(std::vector<std::string> &stats);
   void SetCpuStats(std::vector<std::string> &stats);
 };

@@ -3,10 +3,10 @@
 #include <unistd.h>
 
 #include <cstddef>
+#include <iostream>
 #include <set>
 #include <string>
 #include <vector>
-#include <iostream>
 
 #include "linux_parser.h"
 #include "process.h"
@@ -25,10 +25,10 @@ System::System() {
   }
 }
 
-vector<Process>& System::Processes() { 
+vector<Process>& System::Processes() {
   vector<int> pids(LinuxParser::Pids());
-  for (auto &pid : pids) {
-  	Process process(pid);
+  for (auto& pid : pids) {
+    Process process(pid);
     processes_.push_back(process);
   }
   return processes_;

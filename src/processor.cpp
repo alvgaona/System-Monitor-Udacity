@@ -1,52 +1,53 @@
-#include <vector>
-#include <exception>
-#include <string>
-#include <iostream>
-
 #include "processor.h"
+
+#include <exception>
+#include <iostream>
+#include <string>
+#include <vector>
+
 #include "linux_parser.h"
 
-using std::vector;
 using std::string;
+using std::vector;
 
-Processor::Processor() {};
+Processor::Processor(){};
 
-Processor::Processor(int number) {
-  this->number_ = number;
-}
+Processor::Processor(int number) { this->number_ = number; }
 
 float Processor::Utilization() {
   vector<string> cpu_stats;
   if (this->number_ == -1) {
     cpu_stats = LinuxParser::CpuUtilization();
-  } else if (this->number_ >= 0 && this->number_ <=3) {
+  } else if (this->number_ >= 0 && this->number_ <= 3) {
     cpu_stats = LinuxParser::CpuUtilization(std::to_string(this->number_));
   } else {
     throw std::invalid_argument("The CPU Core number does not exist.");
-  }  
+  }
   float usage = ComputeUtilization(cpu_stats);
   SetCpuStats(cpu_stats);
   return usage;
 }
 
 /*
-* This link describes the calculation
-* https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux
-*/
+ * This link describes the calculation
+ * https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux
+ */
 float Processor::ComputeUtilization(vector<string> &stats) {
   // Calculate idle time
   auto prev_idle = prev_idle_ + prev_iowait_;
   auto idle = std::stol(stats[4]) + std::stol(stats[5]);
-  
+
   // Calculate non-idle time
-  auto prev_non_idle = prev_user_ + prev_nice_ + prev_system_ + prev_irq_ + prev_soft_irq_ + prev_steal_;
-  auto non_idle = std::stol(stats[1]) + std::stol(stats[2]) + std::stol(stats[3]) +
-    std::stol(stats[6]) + std::stol(stats[7]) + std::stol(stats[8]);
-  
+  auto prev_non_idle = prev_user_ + prev_nice_ + prev_system_ + prev_irq_ +
+                       prev_soft_irq_ + prev_steal_;
+  auto non_idle = std::stol(stats[1]) + std::stol(stats[2]) +
+                  std::stol(stats[3]) + std::stol(stats[6]) +
+                  std::stol(stats[7]) + std::stol(stats[8]);
+
   // Calculate total time
   auto prev_total = prev_idle + prev_non_idle;
   auto total = idle + non_idle;
-  
+
   // Calculate differences
   auto total_diff = total - prev_total;
   auto idle_diff = idle - prev_idle;
