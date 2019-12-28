@@ -14,6 +14,14 @@ file(GLOB SOURCES "src/*.cpp")
 
 add_executable(monitor ${SOURCES})
 
+# Add GoogleTest library subdirectories
+add_subdirectory(thirdparty/googletest)
+
+# Add the testing executable
+add_executable(test test/utest_linux_parser.cpp src/linux_parser.cpp)
+
+target_link_libraries(test gtest_main)
+
 set_property(TARGET monitor PROPERTY CXX_STANDARD 17)
 target_link_libraries(monitor ${CURSES_LIBRARIES})
 # TODO: Run -Werror in CI.
