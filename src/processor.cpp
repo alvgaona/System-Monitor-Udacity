@@ -1,6 +1,7 @@
 #include <vector>
 #include <exception>
 #include <string>
+#include <iostream>
 
 #include "processor.h"
 #include "linux_parser.h"
@@ -14,19 +15,23 @@ Processor::Processor(int number) {
   this->number_ = number;
 }
 
-float Processor::Utilization() { 
-	if (this->number_ = -1) {
-      vector<string> cpu_stats(LinuxParser::CpuUtilization());
-      SetCpuStats(cpu_stats);
-      return ComputeUtilization(cpu_stats);
-    } else if (this->number_ >= 0 && this->number_ <=3) {
-      vector<string> cpu_stats(LinuxParser::CpuUtilization(this->number_));
-      SetCpuStats(cpu_stats);
-      return ComputeUtilization(cpu_stats);
-    } else {
-      throw std::invalid_argument("The CPU Core number does not exist.");
-    }
+float Processor::Utilization() {
+  vector<string> cpu_stats;
+  if (this->number_ == -1) {
+    cpu_stats = LinuxParser::CpuUtilization();
+  } else if (this->number_ >= 0 && this->number_ <=3) {
+    cpu_stats = LinuxParser::CpuUtilization(std::to_string(this->number_));
+  } else {
+    throw std::invalid_argument("The CPU Core number does not exist.");
+  }  
+  float usage = ComputeUtilization(cpu_stats);
+  SetCpuStats(cpu_stats);
+  return usage;
 }
+
+// float Processor::Utilization() { 
+// 	return 0.52;
+// }
 
 /*
 * This link describes the calculation
@@ -53,15 +58,15 @@ float Processor::ComputeUtilization(vector<string> &stats) {
   return (total_diff - idle_diff) / static_cast<float>(total_diff);
 }
 
-void Processor::SetCpuStats(vector<string> stats) {
-  this->prev_user_ = std::stol(stats[1]);
-  this->prev_nice_ = std::stol(stats[2]);
-  this->prev_system_ = std::stol(stats[3]);
-  this->prev_idle_ = std::stol(stats[4]);
-  this->prev_iowait_ = std::stol(stats[5]);
-  this->prev_irq_ = std::stol(stats[6]);
-  this->prev_soft_irq_ = std::stol(stats[7]);
-  this->prev_steal_ = std::stol(stats[8]);
-  this->prev_guest_ = std::stol(stats[9]);
-  this->prev_guest_nice_ = std::stol(stats[10]);
+void Processor::SetCpuStats(vector<string> &stats) {
+  this->prev_user_ = std::stof(stats[1]);
+  this->prev_nice_ = std::stof(stats[2]);
+  this->prev_system_ = std::stof(stats[3]);
+  this->prev_idle_ = std::stof(stats[4]);
+  this->prev_iowait_ = std::stof(stats[5]);
+  this->prev_irq_ = std::stof(stats[6]);
+  this->prev_soft_irq_ = std::stof(stats[7]);
+  this->prev_steal_ = std::stof(stats[8]);
+  this->prev_guest_ = std::stof(stats[9]);
+  this->prev_guest_nice_ = std::stof(stats[10]);
 }

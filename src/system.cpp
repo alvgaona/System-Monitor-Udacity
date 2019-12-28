@@ -6,6 +6,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "linux_parser.h"
 #include "process.h"
@@ -20,7 +21,7 @@ System::System() {
   int num_of_cpus = LinuxParser::NumberOfCpus();
   for (int i = 0; i < num_of_cpus; i++) {
     Processor processor(i);
-    cpus_.emplace_back(processor);
+    cpus_.push_back(processor);
   }
 }
 
