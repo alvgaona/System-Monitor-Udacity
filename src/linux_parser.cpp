@@ -8,7 +8,6 @@
 #include <sstream>
 #include <iostream>
 #include <thread>
-#include <unistd.h>
 
 using std::stof;
 using std::string;
@@ -69,7 +68,10 @@ vector<int> LinuxParser::Pids() {
   return pids;
 }
 
-// TODO: Add Buffers
+/* TODO:
+*  Add Buffers. Use maps and remove and
+*  extract repeated code
+*/
 float LinuxParser::MemoryUtilization() { 
   const string mem_total_keyword = "MemTotal";
   const string mem_free_keyword = "MemFree";
@@ -95,22 +97,25 @@ float LinuxParser::MemoryUtilization() {
   }
   return (mem_total - mem_free) / mem_total;  }
 
-long LinuxParser::UpTime() { 
+/* 
+*  Returns the CPU Uptime in seconds from /proc/uptime
+*  which is already in seconds.
+*/
+long int LinuxParser::UpTime() { 
   	std::ifstream stream(kProcDirectory + kUptimeFilename);
    	string line;
     std::getline(stream, line);
-  	return std::stol(LinuxParser::ParseLine(line)[0]);  	
+  	return std::stol(LinuxParser::ParseLine(line)[0]);
 }
 
-long LinuxParser::Jiffies() { return 0.0; }
+long LinuxParser::Jiffies() { throw std::runtime_error("Not yet implemented"); }
 
-// TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid [[maybe_unused]]) { return 0; }
+long LinuxParser::ActiveJiffies(int pid [[maybe_unused]]) { throw std::runtime_error("Not yet implemented"); }
 
-long LinuxParser::ActiveJiffies() { return 0.0; }
+long LinuxParser::ActiveJiffies() { throw std::runtime_error("Not yet implemented"); }
 
-long LinuxParser::IdleJiffies() { return 0.0; }
+long LinuxParser::IdleJiffies() { throw std::runtime_error("Not yet implemented"); }
 
 int LinuxParser::NumberOfCpus() {
   return std::thread::hardware_concurrency();
@@ -132,13 +137,17 @@ int LinuxParser::RunningProcesses() {
   return std::stoi(LinuxParser::ParseLineFrom(kStatFilename, "procs_running")[1]);
 }
 
-// TODO: Read and return the command associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Command(int pid [[maybe_unused]]) { return string(); }
+string LinuxParser::Command(int pid) {
+  std::ifstream stream(kProcDirectory + std::to_string(pid) + kCmdlineFilename);
+  string line;
+  std::getline(stream, line);
+  return line;
+}
 
-// TODO: Read and return the memory used by a process
-// REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Ram(int pid [[maybe_unused]]) { return string(); }
+string LinuxParser::Ram(int pid) {
+  vector<string> line = ParseLineFrom(std::to_string(pid) + kStatusFilename, "VmSize:");
+  return std::to_string(std::stof(line[1]) / 1024).substr(0, 3) + "MB";
+}
 
 string LinuxParser::Uid(int pid) {
   vector<string> line = ParseLineFrom(std::to_string(pid) + kStatusFilename, "Uid:");
@@ -159,23 +168,44 @@ string LinuxParser::ParseUser(int uid) {
     if (line.find(name) != std::string::npos) {
       return line.substr(0, line.find(":"));
     }
-  }
-  
+  }  
   throw std::runtime_error("User not found.");
 }
 
+/*
+* More info about it can be found in https://stackoverflow.com/a/16736599
+* and http://man7.org/linux/man-pages/man5/proc.5.html under /proc/[pid]/stat section
+*/
 long int LinuxParser::UpTime(int pid) { 
-  std::ifstream stream(kProcDirectory + std::to_string(pid) + kUptimeFilename);
-  string line;
-  std::getline(stream, line);
-  // TODO: Return real Uptime
-  return 4600;  
+  auto line = StatFor(pid);
+  
+  auto utime = line.at(13);
+  auto stime = line.at(14);
+  auto ctime = line.at(15);
+  auto cstime = line.at(16);
+  
+  return utime + stime + ctime + cstime;  
 }
 
-// TODO: Read and return the CPU utilization of a process
-// REMOVE: [[maybe_unused]] once you define the function
-float LinuxParser::CpuUtilization(int pid [[maybe_unused]]) { 
-  return 0.0f;
+string LinuxParser::StatFor(int pid) {
+  std::ifstream stream(kProcDirectory + std::to_string(pid) + kStatFilename);
+  string line;
+  std::getline(stream, line);
+  return line;
+}
+
+/*
+* Again more info about this can be found in https://stackoverflow.com/a/16736599
+*/
+float LinuxParser::CpuUtilization(int pid) {
+  auto line = StatFor(pid);
+  auto pid_uptime = UpTime(pid) / sysconf(_SC_CLK_TCK);
+  auto sys_uptime = UpTime();
+  auto starttime = line.at(21);
+  
+  auto seconds = sys_uptime - (starttime / sysconf(_SC_CLK_TCK));
+  
+  return pid_uptime / static_cast<float>(seconds);       
 }
 
 

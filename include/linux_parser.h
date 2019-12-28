@@ -21,7 +21,7 @@ const std::string kPasswordPath{"/etc/passwd"};
 
 // System
 float MemoryUtilization();
-long UpTime();
+long int UpTime();
 std::vector<int> Pids();
 int TotalProcesses();
 int RunningProcesses();
@@ -57,6 +57,7 @@ std::string User(int pid);
 std::string ParseUser(int uid);
 long int UpTime(int pid);
 float CpuUtilization(int pid);
+std::string StatFor(int pid);
 
 // Util
 std::vector<std::string> ParseLine(std::string line);

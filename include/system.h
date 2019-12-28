@@ -7,6 +7,13 @@
 #include "process.h"
 #include "processor.h"
 
+/*
+* Modify this class to LinuxSystem and create
+* an abstract base class called System with
+* pure virtual members to be overriden by
+* concrete classes (e. g. LinuxSystem, BsdSystem, FreeBsdSystem)
+* to make this system monitor portable to different UNIX based OS.
+*/
 class System {
  public:
   System();
