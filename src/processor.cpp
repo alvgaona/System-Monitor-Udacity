@@ -29,10 +29,6 @@ float Processor::Utilization() {
   return usage;
 }
 
-// float Processor::Utilization() { 
-// 	return 0.52;
-// }
-
 /*
 * This link describes the calculation
 * https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux
