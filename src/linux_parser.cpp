@@ -28,6 +28,7 @@ string LinuxParser::OperatingSystem() {
       while (linestream >> key >> value) {
         if (key == "PRETTY_NAME") {
           std::replace(value.begin(), value.end(), '_', ' ');
+          filestream.close();
           return value;
         }
       }
@@ -37,14 +38,17 @@ string LinuxParser::OperatingSystem() {
 }
 
 string LinuxParser::Kernel() {
-  string os, version, kernel;
+  string os;
+  string version;
+  string kernel;
   string line;
-  std::ifstream stream(kProcDirectory + kVersionFilename);
-  if (stream.is_open()) {
-    std::getline(stream, line);
+  std::ifstream filestream(kProcDirectory + kVersionFilename);
+  if (filestream.is_open()) {
+    std::getline(filestream, line);
     std::istringstream linestream(line);
     linestream >> os >> version >> kernel;
   }
+  filestream.close();
   return kernel;
 }
 
@@ -60,7 +64,7 @@ vector<int> LinuxParser::Pids() {
       string filename(file->d_name);
       if (std::all_of(filename.begin(), filename.end(), isdigit)) {
         int pid = stoi(filename);
-        pids.push_back(pid);
+        pids.emplace_back(pid);
       }
     }
   }
@@ -80,9 +84,9 @@ float LinuxParser::MemoryUtilization() {
   float mem_free = -1;
 
   string line;
-  std::ifstream stream(kProcDirectory + kMeminfoFilename);
-  if (stream.is_open()) {
-    while (std::getline(stream, line)) {
+  std::ifstream filestream(kProcDirectory + kMeminfoFilename);
+  if (filestream.is_open()) {
+    while (std::getline(filestream, line)) {
       if (line.compare(0, mem_total_keyword.size(), mem_total_keyword) == 0) {
         mem_total = std::stof(LinuxParser::ParseLine(line)[1]);
       }
@@ -95,6 +99,7 @@ float LinuxParser::MemoryUtilization() {
       }
     }
   }
+  filestream.close();
   return (mem_total - mem_free) / mem_total;
 }
 
@@ -103,28 +108,24 @@ float LinuxParser::MemoryUtilization() {
  *  which is already in seconds.
  */
 long int LinuxParser::UpTime() {
-  std::ifstream stream(kProcDirectory + kUptimeFilename);
+  std::ifstream filestream(kProcDirectory + kUptimeFilename);
   string line;
-  std::getline(stream, line);
+  std::getline(filestream, line);
+  filestream.close();
   return std::stol(LinuxParser::ParseLine(line)[0]);
 }
 
 long LinuxParser::Jiffies() { return UpTime() * sysconf(_SC_CLK_TCK); }
 
 long LinuxParser::ActiveJiffies(int pid) {
-  string line;
-  vector<string> values;
-  std::ifstream filestream(LinuxParser::kProcDirectory + std::to_string(pid) +
-                           LinuxParser::kStatFilename);
-  std::getline(filestream, line);
-  vector<string> stat_line = ParseLine(line);
+  vector<string> stat_line = ParseLine(StatFor(pid));
 
   long jiffies{0};
   if (stat_line.size() > 21) {
-    long user = std::stol(values[13]);
-    long kernel = std::stol(values[14]);
-    long children_user = std::stol(values[15]);
-    long children_kernel = std::stol(values[16]);
+    long user = std::stol(stat_line[13]);
+    long kernel = std::stol(stat_line[14]);
+    long children_user = std::stol(stat_line[15]);
+    long children_kernel = std::stol(stat_line[16]);
     jiffies = user + kernel + children_user + children_kernel;
   }
   return jiffies;
@@ -158,20 +159,25 @@ int LinuxParser::TotalProcesses() {
 }
 
 int LinuxParser::RunningProcesses() {
-  return std::stoi(
-      LinuxParser::ParseLineFrom(kStatFilename, "procs_running")[1]);
+  return std::stoi(LinuxParser::ParseLineFrom(kStatFilename, "procs_running")[1]);
 }
 
 string LinuxParser::Command(int pid) {
-  std::ifstream stream(kProcDirectory + std::to_string(pid) + kCmdlineFilename);
+  std::ifstream filestream(kProcDirectory + std::to_string(pid) + kCmdlineFilename);
   string line;
-  std::getline(stream, line);
+  std::getline(filestream, line);
+  filestream.close();
   return line;
 }
 
+/*
+* In this function uses VmData rather than VmSize since
+* VmData gives the exact Physical RAM Size whereas VmSize
+* gives the virtual memory used.
+*/
 string LinuxParser::Ram(int pid) {
   vector<string> line =
-      ParseLineFrom(std::to_string(pid) + kStatusFilename, "VmSize:");
+      ParseLineFrom(std::to_string(pid) + kStatusFilename, "VmData:");
   return std::to_string(std::stof(line[1]) / 1024).substr(0, 6);
 }
 
@@ -188,10 +194,11 @@ string LinuxParser::User(int pid) {
 
 string LinuxParser::ParseUser(int uid) {
   string line;
-  std::ifstream stream(kPasswordPath);
+  std::ifstream filestream(kPasswordPath);
   auto name = "x:" + to_string(uid);
-  while (std::getline(stream, line)) {
+  while (std::getline(filestream, line)) {
     if (line.find(name) != std::string::npos) {
+      filestream.close();
       return line.substr(0, line.find(":"));
     }
   }
@@ -215,9 +222,10 @@ long int LinuxParser::UpTime(int pid) {
 }
 
 string LinuxParser::StatFor(int pid) {
-  std::ifstream stream(kProcDirectory + std::to_string(pid) + kStatFilename);
+  std::ifstream filestream(kProcDirectory + std::to_string(pid) + kStatFilename);
   string line;
-  std::getline(stream, line);
+  std::getline(filestream, line);
+  filestream.close();
   return line;
 }
 
@@ -239,12 +247,13 @@ float LinuxParser::CpuUtilization(int pid) {
 vector<string> LinuxParser::ParseLineFrom(const string filename,
                                           const string keyword) {
   string line;
-  std::ifstream stream(kProcDirectory + filename);
-  while (getline(stream, line)) {
+  std::ifstream filestream(kProcDirectory + filename);
+  while (getline(filestream, line)) {
     if (line.compare(0, keyword.size(), keyword) == 0) {
       return LinuxParser::ParseLine(line);
     }
   }
+  filestream.close();
 
   vector<string> empty{};
   return empty;

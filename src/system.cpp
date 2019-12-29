@@ -12,24 +12,25 @@
 #include "process.h"
 #include "processor.h"
 
-using std::set;
-using std::size_t;
-using std::string;
-using std::vector;
+using namespace std;
 
 System::System() {
   int num_of_cpus = LinuxParser::NumberOfCpus();
   for (int i = 0; i < num_of_cpus; i++) {
     Processor processor(i);
-    cpus_.push_back(processor);
+    cpus_.emplace_back(processor);
   }
 }
 
 vector<Process>& System::Processes() {
+  if (processes_.size() > 0) {
+    processes_.clear();
+  }
+  
   vector<int> pids(LinuxParser::Pids());
   for (auto& pid : pids) {
     Process process(pid);
-    processes_.push_back(process);
+    processes_.emplace_back(process);
   }
   return processes_;
 }

@@ -9,9 +9,7 @@
 
 #include "linux_parser.h"
 
-using std::string;
-using std::to_string;
-using std::vector;
+using namespace std;
 
 Process::Process(int pid) {
   this->pid_ = pid;
@@ -23,7 +21,14 @@ int Process::Pid() { return pid_; }
 
 float Process::CpuUtilization() { return LinuxParser::CpuUtilization(pid_); }
 
-string Process::Command() { return command_; }
+string Process::Command() {
+ const int MAX_LENGTH = 40;
+ if (command_.length() > MAX_LENGTH) {
+  auto shortened_command = command_.substr(0, MAX_LENGTH);
+  return shortened_command + "...";
+ }
+ return command_;
+}
 
 string Process::Ram() { return LinuxParser::Ram(pid_); }
 
