@@ -111,8 +111,7 @@ long int LinuxParser::UpTime() {
 
 long LinuxParser::Jiffies() { throw std::runtime_error("Not yet implemented"); }
 
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid [[maybe_unused]]) {
+long LinuxParser::ActiveJiffies() {
   throw std::runtime_error("Not yet implemented");
 }
 
