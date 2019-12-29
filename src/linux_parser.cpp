@@ -152,7 +152,7 @@ string LinuxParser::Command(int pid) {
 string LinuxParser::Ram(int pid) {
   vector<string> line =
       ParseLineFrom(std::to_string(pid) + kStatusFilename, "VmSize:");
-  return std::to_string(std::stof(line[1]) / 1024).substr(0, 3) + "MB";
+  return std::to_string(std::stof(line[1]) / 1024).substr(0, 6);
 }
 
 string LinuxParser::Uid(int pid) {
