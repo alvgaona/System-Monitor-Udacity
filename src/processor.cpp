@@ -14,7 +14,7 @@ Processor::Processor(){};
 
 Processor::Processor(int number) { this->number_ = number; }
 
-float Processor::Utilization() {
+double Processor::Utilization() {
   vector<string> cpu_stats;
   if (this->number_ == -1) {
     cpu_stats = LinuxParser::CpuUtilization();
@@ -23,7 +23,7 @@ float Processor::Utilization() {
   } else {
     throw std::invalid_argument("The CPU Core number does not exist.");
   }
-  float usage = ComputeUtilization(cpu_stats);
+  double usage = ComputeUtilization(cpu_stats);
   SetCpuStats(cpu_stats);
   return usage;
 }

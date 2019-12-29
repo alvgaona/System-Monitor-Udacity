@@ -8,7 +8,7 @@ class Processor {
  public:
   Processor();
   Processor(int number);
-  float Utilization();
+  double Utilization();
 
  private:
   int number_{-1};

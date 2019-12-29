@@ -109,18 +109,38 @@ long int LinuxParser::UpTime() {
   return std::stol(LinuxParser::ParseLine(line)[0]);
 }
 
-long LinuxParser::Jiffies() { throw std::runtime_error("Not yet implemented"); }
+long LinuxParser::Jiffies() { return UpTime() * sysconf(_SC_CLK_TCK); }
 
-long LinuxParser::ActiveJiffies() {
-  throw std::runtime_error("Not yet implemented");
+long LinuxParser::ActiveJiffies(int pid) {
+  string line;
+  vector<string> values;
+  std::ifstream filestream(LinuxParser::kProcDirectory + std::to_string(pid) +
+                           LinuxParser::kStatFilename);
+  std::getline(filestream, line);
+  vector<string> stat_line = ParseLine(line);
+
+  long jiffies{0};
+  if (stat_line.size() > 21) {
+    long user = std::stol(values[13]);
+    long kernel = std::stol(values[14]);
+    long children_user = std::stol(values[15]);
+    long children_kernel = std::stol(values[16]);
+    jiffies = user + kernel + children_user + children_kernel;
+  }
+  return jiffies;
 }
 
 long LinuxParser::ActiveJiffies() {
-  throw std::runtime_error("Not yet implemented");
+  vector<string> time = CpuUtilization();
+  return (std::stol(time[CPUStates::kUser_]) + std::stol(time[CPUStates::kNice_]) +
+          std::stol(time[CPUStates::kSystem_]) + std::stol(time[CPUStates::kIRQ_]) +
+          std::stol(time[CPUStates::kSoftIRQ_]) + std::stol(time[CPUStates::kSteal_]) +
+          std::stol(time[CPUStates::kGuest_]) + std::stol(time[CPUStates::kGuestNice_]));
 }
 
 long LinuxParser::IdleJiffies() {
-  throw std::runtime_error("Not yet implemented");
+  vector<string> time = CpuUtilization();
+  return (std::stol(time[CPUStates::kIdle_]) + std::stol(time[CPUStates::kIOwait_]));
 }
 
 int LinuxParser::NumberOfCpus() { return std::thread::hardware_concurrency(); }
