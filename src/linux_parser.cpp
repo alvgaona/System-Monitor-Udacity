@@ -109,20 +109,6 @@ long int LinuxParser::UpTime() {
   return std::stol(LinuxParser::ParseLine(line)[0]);
 }
 
-long LinuxParser::Jiffies() { throw std::runtime_error("Not yet implemented"); }
-
-long LinuxParser::ActiveJiffies() {
-  throw std::runtime_error("Not yet implemented");
-}
-
-long LinuxParser::ActiveJiffies() {
-  throw std::runtime_error("Not yet implemented");
-}
-
-long LinuxParser::IdleJiffies() {
-  throw std::runtime_error("Not yet implemented");
-}
-
 int LinuxParser::NumberOfCpus() { return std::thread::hardware_concurrency(); }
 
 vector<string> LinuxParser::CpuUtilization() {
